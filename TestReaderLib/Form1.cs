@@ -19,6 +19,7 @@ using System.Threading.Tasks;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
+using System.Diagnostics;
 
 namespace RFID_Reader_Csharp
 {
@@ -1637,7 +1638,7 @@ private void Form1_Load(object sender, EventArgs e)
             txtSend.Text = Commands.BuildReadMultiFrame(loopCnt);
             sock.Send(HexStrTobyte(txtSend.Text));logfile.writelog("Send: "+txtSend.Text);
             timerrecive.Enabled = true;
-            //tmrCheckEpc.Enabled = true;
+           //tmrCheckEpc.Enabled = true;
         }
 
         private void btn_stop_rd_Click(object sender, EventArgs e)
@@ -2359,11 +2360,11 @@ private void Form1_Load(object sender, EventArgs e)
 
         private void tmrCheckEpc_Tick(object sender, EventArgs e)
         {
-            if (lastRecCnt == Convert.ToInt32(txtCOMRxCnt.Text)) // no data received during last Tick, it may mean the Read Continue stoped
-            {
-                tmrCheckEpc.Enabled = false;
-                return;
-            }
+            //if (lastRecCnt == Convert.ToInt32(txtCOMRxCnt.Text)) // no data received during last Tick, it may mean the Read Continue stoped
+            //{
+            //    tmrCheckEpc.Enabled = false;
+            //    return;
+            //}
             lastRecCnt = Convert.ToInt32(txtCOMRxCnt.Text);
             DateTime now = System.DateTime.Now;
             DateTime dt;
@@ -2386,10 +2387,10 @@ private void Form1_Load(object sender, EventArgs e)
                         {
                             this.dgvEpcBasic.Rows[i].DefaultCellStyle.BackColor = Color.Red;
                         }
-                        else if ((sub.TotalMilliseconds > (tmrCheckEpc.Interval + 100)))
-                        {
-                            this.dgvEpcBasic.Rows[i].DefaultCellStyle.BackColor = Color.Pink;
-                        }
+                        //else if ((sub.TotalMilliseconds > (tmrCheckEpc.Interval + 100)))
+                        //{
+                        //    this.dgvEpcBasic.Rows[i].DefaultCellStyle.BackColor = Color.Pink;
+                        //}
                         else
                         {
                             int r = 0xFF & (int)(sub.TotalMilliseconds / timeout * 255);
@@ -2401,7 +2402,7 @@ private void Form1_Load(object sender, EventArgs e)
 
                 }
             }
-            textBox1.Text = EPC_No.Count.ToString();
+
 
         }
 
@@ -2618,7 +2619,7 @@ private void Form1_Load(object sender, EventArgs e)
              cbxRxVisable.Checked = true;
 
             if(model=="read") ReadModel(null, null);
-            if (model == "write")
+            else if (model == "write")
             {
                 if (File.Exists(strFilePath))
                 {
@@ -2675,7 +2676,9 @@ private void Form1_Load(object sender, EventArgs e)
 
                 timerauto.Enabled = true;
             }
-            
+            else
+                ReadTidModel(null, null);
+
         }
         /// <summary>
         /// 完成写值并检查值
@@ -3098,6 +3101,7 @@ private void Form1_Load(object sender, EventArgs e)
                 WaitReceive();
                 txtRDMultiNum.Text = times.ToString();
                 int loopCnt = Convert.ToInt32(txtRDMultiNum.Text);
+                //btn_invt_multi_Click(null, null);
                 btn_invt2_Click(null, null);
                 WaitReceive();
                 txtSend.Text = Commands.BuildReadMultiFrame(loopCnt);
@@ -3114,8 +3118,45 @@ private void Form1_Load(object sender, EventArgs e)
 
 
         }
+        private void ReadTidModel(object sender, EventArgs e)
+        {
+            txtSelMask.Text = epc;
+            Delay(100);//单位为毫秒；
+                       //多次轮询
 
-        
+            if (bAutoSend == true)
+            {
+                MessageBox.Show("请停止连续盘存", "警告", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+            //停止轮询；
+            logfile.writelog("停止轮询！");
+            btn_stop_rd_Click(null, null);
+            WaitReceive();
+            logfile.writelog("单词轮询开始！");
+            //开始轮询
+            for (int i = 0; i <= 6; i++)
+            {
+                //设置功率
+                SetPaPower(i);
+                WaitReceive();
+                txtRDMultiNum.Text = times.ToString();
+                int loopCnt = Convert.ToInt32(txtRDMultiNum.Text);
+                btn_invt2_Click(null, null);
+                WaitReceive();
+                txtSend.Text = Commands.BuildReadMultiFrame(loopCnt);
+                sock.Send(HexStrTobyte(txtSend.Text)); logfile.writelog("Send: " + txtSend.Text);
+                timerrecive.Enabled = true;
+                WaitReceive();
+            }
+            EndAction();
+            logfile.writelog("读取标签失败！设定有标签" + allepccount + "个，但只读取到" + EPC_No.Count + "个");
+            MessageBox.Show("只读取到" + EPC_No.Count.ToString() + "个标签，还有" + (allepccount - EPC_No.Count).ToString() + "个标签未读出！");
+            System.Environment.Exit(0);
+            return;
+        }
+
+
 
         private static byte[] HexStrTobyte(string hexString)
         {
@@ -3155,7 +3196,7 @@ private void Form1_Load(object sender, EventArgs e)
         }
         private void Timerrecive_Tick(object sender, EventArgs e)
         {
-           tmrCheckEpc.Enabled = true ;
+            tmrCheckEpc.Enabled = true ;
             timerreceive_run =true;
             timerrecive.Enabled = false;
             string recold = "b";
@@ -3259,11 +3300,12 @@ private void Form1_Load(object sender, EventArgs e)
 
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
-            MessageBox.Show("ok");
+            //MessageBox.Show("你想要关闭程序？");
             DialogResult result;
-            result = MessageBox.Show("确定退出吗？bai", "退出", MessageBoxButtons.OKCancel, MessageBoxIcon.Question);
+            result = MessageBox.Show("确定退出吗？", "退出", MessageBoxButtons.OKCancel, MessageBoxIcon.Question);
             if (result == DialogResult.OK)
             {
+                btn_stop_rd_Click(null, null);
                 Application.ExitThread();
             }
             else
@@ -3274,19 +3316,18 @@ private void Form1_Load(object sender, EventArgs e)
 
         private void Form1_FormClosed(object sender, FormClosedEventArgs e)
         {
-            MessageBox.Show("ok");
-            DialogResult result;
-            result = MessageBox.Show("确定退出吗？bai", "退出", MessageBoxButtons.OKCancel, MessageBoxIcon.Question);
-            if (result == DialogResult.OK)
-            {
-                Application.ExitThread();
-            }
-
+            Process[] processes = Process.GetProcessesByName("RFID_Reader_Csharp");
+            processes[0].Kill();
         }
 
         private void Form1_DoubleClick(object sender, EventArgs e)
         {
             MessageBox.Show("yyyyy");
+        }
+
+        private void textBox1_TextChanged(object sender, EventArgs e)
+        {
+
         }
     }
 }

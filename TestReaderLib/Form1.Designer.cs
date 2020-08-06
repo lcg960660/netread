@@ -194,7 +194,6 @@
             this.txtCOMTxCnt = new System.Windows.Forms.TextBox();
             this.btnInsertRfCh = new System.Windows.Forms.Button();
             this.gbxEpcTableBasic = new System.Windows.Forms.GroupBox();
-            this.textBox1 = new System.Windows.Forms.TextBox();
             this.txtChIndexEnd = new System.Windows.Forms.TextBox();
             this.label47 = new System.Windows.Forms.Label();
             this.btnChangeBaudrate = new System.Windows.Forms.Button();
@@ -2241,7 +2240,6 @@
             // 
             // gbxEpcTableBasic
             // 
-            this.gbxEpcTableBasic.Controls.Add(this.textBox1);
             this.gbxEpcTableBasic.Controls.Add(this.txtChIndexEnd);
             this.gbxEpcTableBasic.Controls.Add(this.label47);
             this.gbxEpcTableBasic.Controls.Add(this.btnChangeBaudrate);
@@ -2257,13 +2255,6 @@
             this.gbxEpcTableBasic.TabStop = false;
             this.gbxEpcTableBasic.Text = "EPC 表格";
             this.gbxEpcTableBasic.Enter += new System.EventHandler(this.GbxEpcTableBasic_Enter);
-            // 
-            // textBox1
-            // 
-            this.textBox1.Location = new System.Drawing.Point(107, 208);
-            this.textBox1.Name = "textBox1";
-            this.textBox1.Size = new System.Drawing.Size(427, 21);
-            this.textBox1.TabIndex = 34;
             // 
             // txtChIndexEnd
             // 
@@ -2988,7 +2979,6 @@
         private System.Windows.Forms.CheckBox cbxAutoClear;
         private System.Windows.Forms.Button btn_clear_rx;
         private System.Windows.Forms.TextBox txtReceive;
-        private System.Windows.Forms.TextBox textBox1;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.GroupBox groupBox3;
         private System.Windows.Forms.Label label36;
