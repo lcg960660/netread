@@ -194,6 +194,7 @@
             this.txtCOMTxCnt = new System.Windows.Forms.TextBox();
             this.btnInsertRfCh = new System.Windows.Forms.Button();
             this.gbxEpcTableBasic = new System.Windows.Forms.GroupBox();
+            this.label2 = new System.Windows.Forms.Label();
             this.txtChIndexEnd = new System.Windows.Forms.TextBox();
             this.label47 = new System.Windows.Forms.Label();
             this.btnChangeBaudrate = new System.Windows.Forms.Button();
@@ -1209,6 +1210,7 @@
             this.txtGetSelMask.ReadOnly = true;
             this.txtGetSelMask.Size = new System.Drawing.Size(290, 21);
             this.txtGetSelMask.TabIndex = 35;
+            this.txtGetSelMask.TextChanged += new System.EventHandler(this.txtGetSelMask_TextChanged);
             this.txtGetSelMask.DoubleClick += new System.EventHandler(this.txtGetSelMask_DoubleClick);
             // 
             // btnGetSelect
@@ -1564,6 +1566,7 @@
             this.txtInvtRWData.Name = "txtInvtRWData";
             this.txtInvtRWData.Size = new System.Drawing.Size(415, 19);
             this.txtInvtRWData.TabIndex = 10;
+            this.txtInvtRWData.TextChanged += new System.EventHandler(this.txtInvtRWData_TextChanged);
             this.txtInvtRWData.DoubleClick += new System.EventHandler(this.txtInvtReadData_DoubleClick);
             // 
             // btnInvtWrtie
@@ -2240,6 +2243,7 @@
             // 
             // gbxEpcTableBasic
             // 
+            this.gbxEpcTableBasic.Controls.Add(this.label2);
             this.gbxEpcTableBasic.Controls.Add(this.txtChIndexEnd);
             this.gbxEpcTableBasic.Controls.Add(this.label47);
             this.gbxEpcTableBasic.Controls.Add(this.btnChangeBaudrate);
@@ -2255,6 +2259,15 @@
             this.gbxEpcTableBasic.TabStop = false;
             this.gbxEpcTableBasic.Text = "EPC 表格";
             this.gbxEpcTableBasic.Enter += new System.EventHandler(this.GbxEpcTableBasic_Enter);
+            // 
+            // label2
+            // 
+            this.label2.AutoSize = true;
+            this.label2.Location = new System.Drawing.Point(598, 21);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(41, 15);
+            this.label2.TabIndex = 34;
+            this.label2.Text = "label2";
             // 
             // txtChIndexEnd
             // 
@@ -2985,6 +2998,7 @@
         private System.Windows.Forms.Button button1;
         private System.Windows.Forms.TextBox textBox2;
         private System.Windows.Forms.Timer timerrecive;
+        private System.Windows.Forms.Label label2;
         //private System.IO.Ports.SerialPort ComDevice;
     }
 }
