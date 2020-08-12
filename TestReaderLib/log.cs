@@ -25,10 +25,11 @@ namespace RFID_Reader_Csharp
         //static string logfile = System.AppDomain.CurrentDomain.BaseDirectory + @"log.txt";
         public void writelog(string s)
         {
+            DateTime a = DateTime.Now;
             if (!File.Exists(logfile))
-                File.WriteAllText(logfile, s+"\r\n");
+                File.WriteAllText(logfile,a.ToString()+"****" +s+"\r\n");
             else
-                File.AppendAllText(logfile, s + "\r\n*\r\n");
+                File.AppendAllText(logfile, a.ToString() + "****" + s + "\r\n");
         }
         public  void DeleteDirectory(string fileName)
         {

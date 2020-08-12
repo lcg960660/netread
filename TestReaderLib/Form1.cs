@@ -1719,7 +1719,9 @@ private void Form1_Load(object sender, EventArgs e)
             int intMaskLen = Convert.ToInt32(txtSelLength.Text, 16);
             int intSelDataMSB = intSelMemBank + intAction * 4 + intSelTarget * 32;
             int intTruncate = 1;
-            sock.Send(HexStrTobyte(Commands.BuildSetSelectFrame(intSelTarget, intAction, intSelMemBank, intSelPointer, intMaskLen, intTruncate, txtSelMask.Text)));
+            string x = Commands.BuildSetSelectFrame(intSelTarget, intAction, intSelMemBank, intSelPointer, intMaskLen, intTruncate, txtSelMask.Text);
+            sock.Send(HexStrTobyte(x));
+            logfile.writelog("Send:"+x);
             timerrecive.Enabled = true;
             Thread.Sleep(50);
    
@@ -2247,7 +2249,7 @@ private void Form1_Load(object sender, EventArgs e)
             double power = powerDBm / 100;
             logfile.writelog("设置发射功率为：" + power + "dBm");
             txtSend.Text = Commands.BuildSetPaPowerFrame((Int16)powerDBm);
-            sock.Send(HexStrTobyte( txtSend.Text));
+            sock.Send(HexStrTobyte( txtSend.Text)); logfile.writelog("Send: " + txtSend.Text);
             timerrecive.Enabled = true;
         }
         private void btnGetPaPower_Click(object sender, EventArgs e)
@@ -3188,10 +3190,11 @@ private void Form1_Load(object sender, EventArgs e)
                 return;
             }
             //单次轮询
-            DateTime allstart = DateTime.Now;
+           
 
             for (int i = 0; i <= 6; i++)
             {
+                DateTime allstart = DateTime.Now;
                 //设置功率
                 SetPaPower(i);
                
@@ -3224,12 +3227,12 @@ private void Form1_Load(object sender, EventArgs e)
 
                         }
                         if (flag == 0) continue;
-                        logfile.writelog("epc:"+epc);
+                        //logfile.writelog("epc:"+epc);
                         starttime = DateTime.Now;
                         txtInvtRWData.Text = "";
                         while ((txtInvtRWData.Text == "") && Spantime(starttime) < timeout)//每个epc 获取tid直到超时；
                         {
-                            logfile.writelog(epc);
+                            //logfile.writelog(epc);
                             btn_invtread_Click_tid(epc);//读tid包括select
                             Delay(100);//单位为毫秒；
                             if (txtInvtRWData.Text != "")
@@ -3241,7 +3244,7 @@ private void Form1_Load(object sender, EventArgs e)
                                     {
                                         foreach (var tid in ALLTID)
                                         {
-                                            logfile.writelog("epc:" + tid.Key + " TID:" + tid.Value);
+                                            logfile.writelog("EPC:" + tid.Key + " TID:" + tid.Value);
                                         }
                                         MessageBox.Show("共发现RFID数:   " + ALLTID.Count.ToString() );
                                         return;
@@ -3260,16 +3263,16 @@ private void Form1_Load(object sender, EventArgs e)
                     EPC_No.Clear();
 
                 }
-                while (Spantime(allstart) < 60000);
+                while (Spantime(allstart) < times);
                 if(ALLTID.Count >= allepccount)
                 {
                     foreach (string tid in ALLTID.Keys)
                     {
                         logfile.writelog("TID:" + tid);
                     }
-                    return;
+                    
                     MessageBox.Show("成功发现RFID数:   " + ALLTID.Count.ToString());
-                    //return;
+                    return;
                     System.Environment.Exit(0);
                 }
 
@@ -3281,7 +3284,7 @@ private void Form1_Load(object sender, EventArgs e)
                 logfile.writelog("TID:" + tid);
             }
             MessageBox.Show("Expect:   " + allepccount + "\nFact: "+ ALLTID.Count.ToString());
-           
+            return;
             System.Environment.Exit(0);
             DateTime start = DateTime.Now;
             //txtSelMask.Text = epc;
@@ -3516,7 +3519,7 @@ private void Form1_Load(object sender, EventArgs e)
                    
                 }
  
-               logfile.writelog(txtReceive.Text);
+              logfile.writelog("Received:"+txtReceive.Text);
                // Delay(100);
                 //rr++;
                 recnew = txtCOMRxCnt.Text;
@@ -3525,7 +3528,7 @@ private void Form1_Load(object sender, EventArgs e)
                
             }
             timerreceive_run = false;
-            logfile.writelog("end");
+            logfile.writelog("recieve data end");
         }
         private void WaitReceive()
         {
