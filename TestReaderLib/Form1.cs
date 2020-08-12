@@ -62,10 +62,11 @@ namespace RFID_Reader_Csharp
         private static int[] IFAmpGainTable = { 12, 18, 21, 24, 27, 30, 36, 40 };
 
         private string sn;
-
+        private List<string> epc_no_tid, EPC_No;
         public Form1()
         {
             logfile = new log();
+            EPC_No = new List<string>();
             logfile.creatlog("debug.txt");
             Readconfig();
             try
@@ -332,7 +333,7 @@ private void Form1_Load(object sender, EventArgs e)
                     {
                         try
                         {
-                            EPC_No.Add(epc, EPC_No.Count);
+                            EPC_No.Add(epc);
                         }
                         catch (Exception ex)
                         {
@@ -341,7 +342,7 @@ private void Form1_Load(object sender, EventArgs e)
 
                     }
                     logfile.writelog("Recived: " + strPacket);
-                    if (EPC_No.Count >= allepccount)
+                    if (model!="read_tid"&&EPC_No.Count >= allepccount)
                     {
 
                         MessageBox.Show("成功发现共计" + allepccount + "只标签！");
@@ -2401,7 +2402,6 @@ private void Form1_Load(object sender, EventArgs e)
         private string port;
         private string sntxt;
         private int baud;
-        private Dictionary<string, int> EPC_No;
         private Dictionary<string, string> ALLTID;
         private IPAddress ServerIP = IPAddress.Parse("127.0.0.1");
         private IPEndPoint serverFullAddr;
@@ -2667,8 +2667,8 @@ private void Form1_Load(object sender, EventArgs e)
 
 
             timerauto.Enabled = false ;
-            
-            EPC_No = new Dictionary<String, int>();
+
+
             start_count_rfid = true;
             cbxAutoClear.Checked = true;
              cbxRxVisable.Checked = true;
@@ -3181,6 +3181,7 @@ private void Form1_Load(object sender, EventArgs e)
         private void ReadTidModel(object sender, EventArgs e)
         {
             ALLTID = new Dictionary<string, string>();
+            EPC_No = new List<string>();
             if (bAutoSend == true)
             {
                 MessageBox.Show("请停止连续盘存", "警告", MessageBoxButtons.OK, MessageBoxIcon.Warning);
@@ -3188,78 +3189,101 @@ private void Form1_Load(object sender, EventArgs e)
             }
             //单次轮询
             DateTime allstart = DateTime.Now;
-            DateTime start = DateTime.Now;
-            do
+
+            for (int i = 0; i <= 6; i++)
             {
-                logfile.writelog("单次轮询：");
-                
+                //设置功率
+                SetPaPower(i);
+               
                 do
                 {
-                    btn_invt2_Click(null, null);
-                    Delay(1000);//单位为毫秒；
-                                //WaitReceive();
-                                //System.Threading.Thread.Sleep(100);
+                    DateTime starttime = DateTime.Now;
+                    logfile.writelog("单次轮询：");
 
-                }
-                while (txtReceive.Text.IndexOf("BB 01 FF") == 0 && Spantime(start) < timeout);
-                WaitReceive();
-                //txtSelMask.Text = EPC_No.Count.ToString();
-                foreach (string epc in EPC_No.Keys)
-                {
-                    int flag = 1;//判断tid以及读取出来了
-                    foreach (var tid in ALLTID)
+                    do
                     {
-                        if (tid.Key == epc)
-                        {
-                            flag = 0;
-                            break;
-                        }
+                        btn_invt2_Click(null, null);
+                        Delay(1000);//单位为毫秒；
+                                    //WaitReceive();
+                                    //System.Threading.Thread.Sleep(100);
 
                     }
-                    if (flag == 0) continue;
-                    logfile.writelog(epc);
-                    txtInvtRWData.Text = "";
-                    while ((txtInvtRWData.Text == "") && Spantime(start) < timeout)//每个epc 获取tid直到超时；
+                    while (txtReceive.Text.IndexOf("BB 01 FF") == 0 && Spantime(starttime) < timeout);
+                    WaitReceive();
+                    //txtSelMask.Text = EPC_No.Count.ToString();
+                    foreach (string epc in EPC_No)
                     {
-                        
-                        btn_invtread_Click_tid(epc);//读tid包括select
-                        Delay(100);//单位为毫秒；
-                        if (txtInvtRWData.Text != "")
+                        int flag = 1;//判断，如果epc已读出TID便不再操作该epc
+                        foreach (var tid in ALLTID)
                         {
-                            try
+                            if (tid.Key == epc)
                             {
-                                ALLTID.Add(epc,txtInvtRWData.Text.Substring(0, txtInvtRWData.Text.Length - 3) );
-                                if (ALLTID.Count>=allepccount)
+                                flag = 0;
+                                break;
+                            }
+
+                        }
+                        if (flag == 0) continue;
+                        logfile.writelog("epc:"+epc);
+                        starttime = DateTime.Now;
+                        txtInvtRWData.Text = "";
+                        while ((txtInvtRWData.Text == "") && Spantime(starttime) < timeout)//每个epc 获取tid直到超时；
+                        {
+                            logfile.writelog(epc);
+                            btn_invtread_Click_tid(epc);//读tid包括select
+                            Delay(100);//单位为毫秒；
+                            if (txtInvtRWData.Text != "")
+                            {
+                                try
                                 {
-                                    foreach (var tid in ALLTID)
+                                    ALLTID.Add(epc, txtInvtRWData.Text.Substring(0, txtInvtRWData.Text.Length - 3));
+                                    if (ALLTID.Count >= allepccount)
                                     {
-                                        logfile.writelog("epc:"+tid.Key+" TID:" + tid.Value);
+                                        foreach (var tid in ALLTID)
+                                        {
+                                            logfile.writelog("epc:" + tid.Key + " TID:" + tid.Value);
+                                        }
+                                        MessageBox.Show("共发现RFID数:   " + ALLTID.Count.ToString() );
+                                        return;
+                                        System.Environment.Exit(0);
                                     }
-                                    MessageBox.Show("共发现RFID数:   " + ALLTID.Count.ToString());
-                                    return;
-                                    System.Environment.Exit(0);
+                                }
+                                catch (Exception x)
+                                {
+
                                 }
                             }
-                            catch (Exception x)
-                            {
-
-                            }
                         }
+                        //if (txtInvtRWData.Text == "") epc_no_tid.Add(epc);
+                        //sock.Send(HexStrTobyte(Commands.BuildSetInventoryModeFrame("01")));//取消选择
                     }
+                    EPC_No.Clear();
 
-                    //sock.Send(HexStrTobyte(Commands.BuildSetInventoryModeFrame("01")));//取消选择
                 }
-                EPC_No.Clear();
+                while (Spantime(allstart) < 60000);
+                if(ALLTID.Count >= allepccount)
+                {
+                    foreach (string tid in ALLTID.Keys)
+                    {
+                        logfile.writelog("TID:" + tid);
+                    }
+                    return;
+                    MessageBox.Show("成功发现RFID数:   " + ALLTID.Count.ToString());
+                    //return;
+                    System.Environment.Exit(0);
+                }
 
+                
             }
-            while (Spantime(allstart) < 12000);
+            logfile.writelog("总共发现TID: " + ALLTID.Count.ToString());
             foreach (string tid in ALLTID.Keys)
             {
                 logfile.writelog("TID:" + tid);
             }
-            MessageBox.Show("共发现RFID数:   " + ALLTID.Count.ToString());
-            return;
+            MessageBox.Show("Expect:   " + allepccount + "\nFact: "+ ALLTID.Count.ToString());
+           
             System.Environment.Exit(0);
+            DateTime start = DateTime.Now;
             //txtSelMask.Text = epc;
             Delay(100000);//单位为毫秒；
             //select标签
@@ -3506,7 +3530,7 @@ private void Form1_Load(object sender, EventArgs e)
         private void WaitReceive()
         {
             timerrecive.Enabled = true;
-            Delay(1000);
+           if(model!="read_tid")Delay(1000);
             while (timerreceive_run) ;
         }
         /// <summary>
